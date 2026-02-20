@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mass Save Intake — Anthony</title>
+  <meta name="description" content="Mass Save contractor intake questionnaire">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #020617;
+      --surface: #0f172a;
+      --surface-2: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --amber: #f59e0b;
+      --amber-light: #fbbf24;
+      --amber-dim: rgba(245, 158, 11, 0.15);
+      --emerald: #10b981;
+      --emerald-dim: rgba(16, 185, 129, 0.15);
+      --red: #ef4444;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+    .progress-bar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--amber), var(--amber-light));
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0 2px 2px 0;
+    }
+    .progress-text {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 4px 0;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 72px 20px 40px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+    .header h1 span { color: var(--amber); }
+    .header p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Questions */
+    .question {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .question:focus-within {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 3px var(--amber-dim);
+    }
+    .question.completed {
+      border-color: var(--emerald);
+      box-shadow: 0 0 0 3px var(--emerald-dim);
+    }
+    .question .q-num {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .question .q-num .check {
+      color: var(--emerald);
+      display: none;
+    }
+    .question.completed .q-num .check { display: inline; }
+    .question label.q-label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    /* Inputs */
+    input[type="text"], input[type="number"], textarea, select {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--amber);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+    select { appearance: none; cursor: pointer; }
+
+    /* Checkboxes & Radios */
+    .option-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .option-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      font-size: 0.875rem;
+    }
+    .option-item:hover { border-color: var(--amber); }
+    .option-item input[type="checkbox"],
+    .option-item input[type="radio"] {
+      accent-color: var(--amber);
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* File upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--surface-2);
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--amber);
+      background: var(--amber-dim);
+    }
+    .upload-zone .icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .upload-zone p { font-size: 0.8rem; color: var(--text-muted); }
+    .upload-zone .file-list {
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--emerald);
+    }
+
+    /* Submit */
+    .submit-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--amber), #d97706);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Auto-save badge */
+    .autosave {
+      text-align: center;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--text-muted);
+      margin-top: 10px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .autosave.show { opacity: 1; }
+
+    /* Success screen */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .success-screen .big-check {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+    .success-screen h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .success-screen p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .edit-back-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .edit-back-btn:hover { border-color: var(--amber); }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 20px 24px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+    .footer a { color: var(--amber); text-decoration: none; }
+
+    /* Error toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: var(--red);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (min-width: 480px) {
+      .option-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    <div class="progress-text" id="progressText">0 / 11</div>
+  </div>
+
+  <!-- Form -->
+  <div class="container" id="formContainer">
+    <div class="header">
+      <h1>Mass Save <span>Intake</span></h1>
+      <p>Hey Anthony — a few quick questions so we can map out your workflow and find the best ways to save you time.</p>
+    </div>
+
+    <form id="intakeForm" novalidate>
+
+      <!-- Q1 -->
+      <div class="question" data-q="1">
+        <div class="q-num"><span class="check">&#10003;</span> Question 01</div>
+        <label class="q-label" for="q1">Which portal(s) do you primarily use for Mass Save jobs?</label>
+        <input type="text" id="q1" name="portal" placeholder="e.g. Salesforce, ClearResult, custom portal…" autocomplete="off">
+      </div>
+
+      <!-- Q2 -->
+      <div class="question" data-q="2">
+        <div class="q-num"><span class="check">&#10003;</span> Question 02</div>
+        <label class="q-label" for="q2">Who is your lead vendor or utility partner?</label>
+        <input type="text" id="q2" name="lead_vendor" placeholder="e.g. National Grid, Eversource, Cape Light…" autocomplete="off">
+      </div>
+
+      <!-- Q3 -->
+      <div class="question" data-q="3">
+        <div class="q-num"><span class="check">&#10003;</span> Question 03</div>
+        <label class="q-label" for="q3_night">How many jobs do you typically complete per night?</label>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <div style="flex:1;min-width:120px;">
+            <input type="number" id="q3_night" name="jobs_per_night" placeholder="Per night" min="0">
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <input type="number" id="q3_week" name="jobs_per_week" placeholder="Per week" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="question" data-q="4">
+        <div class="q-num"><span class="check">&#10003;</span> Question 04</div>
+        <label class="q-label" for="q4">Walk us through your typical workflow — from receiving a lead to completing a job.</label>
+        <textarea id="q4" name="workflow" placeholder="Start from when you get the lead assignment…"></textarea>
+      </div>
+
+      <!-- Q5 -->
+      <div class="question" data-q="5">
+        <div class="q-num"><span class="check">&#10003;</span> Question 05</div>
+        <label class="q-label">Which documents do you typically upload per job?</label>
+        <div class="option-grid">
+          <label class="option-item"><input type="checkbox" name="documents" value="Photos"> Photos</label>
+          <label class="option-item"><input type="checkbox" name="documents" value="Invoices"> Invoices</label>
+          <label class="option-item"><input type="checkbox" name="documents" value="Customer signatures"> Customer signatures</label>
+          <label class="option-item"><input type="checkbox" name="documents" value="Pre/post inspection forms"> Pre/post inspection forms</label>
+          <label class="option-item"><input type="checkbox" name="documents" value="Product spec sheets"> Product spec sheets</label>
+          <label class="option-item"><input type="checkbox" name="documents" value="Permit docs"> Permit docs</label>
+        </div>
+      </div>
+
+      <!-- Q6 -->
+      <div class="question" data-q="6">
+        <div class="q-num"><span class="check">&#10003;</span> Question 06</div>
+        <label class="q-label">Which field software or apps do you use?</label>
+        <div class="option-grid">
+          <label class="option-item"><input type="checkbox" name="field_software" value="Salesforce Mobile"> Salesforce Mobile</label>
+          <label class="option-item"><input type="checkbox" name="field_software" value="Google Sheets"> Google Sheets</label>
+          <label class="option-item"><input type="checkbox" name="field_software" value="QuickBooks"> QuickBooks</label>
+          <label class="option-item"><input type="checkbox" name="field_software" value="Excel"> Excel</label>
+          <label class="option-item"><input type="checkbox" name="field_software" value="Paper forms"> Paper forms</label>
+          <label class="option-item"><input type="checkbox" name="field_software" value="Custom / other"> Custom / other</label>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="question" data-q="7">
+        <div class="q-num"><span class="check">&#10003;</span> Question 07</div>
+        <label class="q-label">How similar are your jobs to each other?</label>
+        <div class="option-grid">
+          <label class="option-item"><input type="radio" name="job_similarity" value="Nearly identical"> Nearly identical</label>
+          <label class="option-item"><input type="radio" name="job_similarity" value="Mostly similar"> Mostly similar</label>
+          <label class="option-item"><input type="radio" name="job_similarity" value="Somewhat varied"> Somewhat varied</label>
+          <label class="option-item"><input type="radio" name="job_similarity" value="Every job is different"> Every job is different</label>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="question" data-q="8">
+        <div class="q-num"><span class="check">&#10003;</span> Question 08</div>
+        <label class="q-label" for="q8">How many different portals or systems do you log into on a typical day?</label>
+        <input type="number" id="q8" name="num_portals" placeholder="e.g. 3" min="0">
+      </div>
+
+      <!-- Q9 -->
+      <div class="question" data-q="9">
+        <div class="q-num"><span class="check">&#10003;</span> Question 09</div>
+        <label class="q-label">Who typically receives the rebate payment?</label>
+        <div class="option-grid">
+          <label class="option-item"><input type="radio" name="rebate_payee" value="Homeowner"> Homeowner</label>
+          <label class="option-item"><input type="radio" name="rebate_payee" value="Contractor (me)"> Contractor (me)</label>
+          <label class="option-item"><input type="radio" name="rebate_payee" value="Split / varies"> Split / varies</label>
+        </div>
+      </div>
+
+      <!-- Q10: Screenshot upload + screen share -->
+      <div class="question" data-q="10">
+        <div class="q-num"><span class="check">&#10003;</span> Question 10</div>
+        <label class="q-label">Upload a screenshot of a portal you use, or let us know if you're open to a screen share.</label>
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">&#128206;</div>
+          <p>Tap to upload or drag &amp; drop<br><span style="font-size:0.7rem;color:var(--border);">PNG, JPG, PDF — max 10 MB</span></p>
+          <input type="file" id="fileInput" name="screenshot" accept="image/*,.pdf" style="display:none" multiple>
+          <div class="file-list" id="fileList"></div>
+        </div>
+        <div style="margin-top:12px;">
+          <label class="option-item">
+            <input type="checkbox" name="screen_share" value="yes">
+            I'm open to a quick screen share
+          </label>
+        </div>
+      </div>
+
+      <!-- Bonus -->
+      <div class="question" data-q="11">
+        <div class="q-num"><span class="check">&#10003;</span> Bonus</div>
+        <label class="q-label" for="q11">What's your single biggest pain point in the current process?</label>
+        <textarea id="q11" name="pain_point" placeholder="The one thing that drives you crazy…"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Submit Responses</button>
+      <div class="autosave" id="autosave">Auto-saved</div>
+    </form>
+
+    <footer class="footer">
+      Powered by <a href="#">Zev Steinmetz Consulting</a>
+    </footer>
+  </div>
+
+  <!-- Success -->
+  <div class="container success-screen" id="successScreen">
+    <div class="big-check">&#9989;</div>
+    <h2>All set, Anthony!</h2>
+    <p>Your responses have been submitted. We'll review everything and follow up soon.</p>
+    <button class="edit-back-btn" id="editBackBtn">&#9998; Edit my responses</button>
+    <footer class="footer" style="margin-top:40px;">
+      Powered by <a href="#">Zev Steinmetz Consulting</a>
+    </footer>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // === DOM refs ===
+    const form = document.getElementById('intakeForm');
+    const formContainer = document.getElementById('formContainer');
+    const successScreen = document.getElementById('successScreen');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+    const autosaveEl = document.getElementById('autosave');
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const toastEl = document.getElementById('toast');
+    const questions = document.querySelectorAll('.question');
+    const TOTAL = questions.length;
+    const STORAGE_KEY = 'masssave_intake_draft';
+
+    // === Progress ===
+    function updateProgress() {
+      let done = 0;
+      questions.forEach(q => {
+        const inputs = q.querySelectorAll('input, textarea, select');
+        let filled = false;
+        inputs.forEach(inp => {
+          if (inp.type === 'checkbox' || inp.type === 'radio') {
+            if (inp.checked) filled = true;
+          } else if (inp.type === 'file') {
+            if (inp.files && inp.files.length) filled = true;
+          } else {
+            if (inp.value.trim()) filled = true;
+          }
+        });
+        q.classList.toggle('completed', filled);
+        if (filled) done++;
+      });
+      const pct = Math.round((done / TOTAL) * 100);
+      progressBar.style.width = pct + '%';
+      progressText.textContent = done + ' / ' + TOTAL;
+    }
+
+    // === Auto-save ===
+    function saveToLocal() {
+      const data = {};
+      const fd = new FormData(form);
+      for (const [key, value] of fd.entries()) {
+        if (key === 'screenshot') continue;
+        if (data[key]) {
+          if (!Array.isArray(data[key])) data[key] = [data[key]];
+          data[key].push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      autosaveEl.classList.add('show');
+      setTimeout(() => autosaveEl.classList.remove('show'), 1500);
+    }
+
+    function loadFromLocal() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        Object.entries(data).forEach(([key, val]) => {
+          const values = Array.isArray(val) ? val : [val];
+          const els = form.querySelectorAll(`[name="${key}"]`);
+          els.forEach(el => {
+            if (el.type === 'checkbox') {
+              el.checked = values.includes(el.value);
+            } else if (el.type === 'radio') {
+              el.checked = el.value === values[0];
+            } else {
+              el.value = values[0] || '';
+            }
+          });
+        });
+      } catch (e) { /* ignore corrupt data */ }
+      updateProgress();
+    }
+
+    // Debounced save
+    let saveTimer;
+    form.addEventListener('input', () => {
+      updateProgress();
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveToLocal, 600);
+    });
+    form.addEventListener('change', () => {
+      updateProgress();
+      saveToLocal();
+    });
+
+    // === File upload ===
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      fileInput.files = e.dataTransfer.files;
+      showFiles();
+    });
+    fileInput.addEventListener('change', showFiles);
+
+    function showFiles() {
+      const names = Array.from(fileInput.files).map(f => f.name);
+      fileList.textContent = names.length ? names.join(', ') : '';
+      updateProgress();
+    }
+
+    // === Toast ===
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 4000);
+    }
+
+    // === Submit ===
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      const fd = new FormData(form);
+      const payload = {};
+      for (const [key, value] of fd.entries()) {
+        if (key === 'screenshot') continue;
+        if (payload[key]) {
+          if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+          payload[key].push(value);
+        } else {
+          payload[key] = value;
+        }
+      }
+
+      // File names for reference
+      if (fileInput.files.length) {
+        payload._uploaded_files = Array.from(fileInput.files).map(f => f.name);
+      }
+
+      try {
+        const res = await fetch('https://formspree.io/f/xvzbbrpb', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error('Formspree returned ' + res.status);
+
+        localStorage.removeItem(STORAGE_KEY);
+        formContainer.style.display = 'none';
+        successScreen.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        // Fallback: mailto
+        const body = Object.entries(payload).map(([k, v]) =>
+          `${k}: ${Array.isArray(v) ? v.join(', ') : v}`
+        ).join('\n');
+        const mailto = `mailto:?subject=Mass Save Intake — Anthony&body=${encodeURIComponent(body)}`;
+        window.location.href = mailto;
+        toast('Network issue — opening email fallback…');
+        btn.disabled = false;
+        btn.textContent = 'Submit Responses';
+      }
+    });
+
+    // === Edit back ===
+    document.getElementById('editBackBtn').addEventListener('click', () => {
+      successScreen.style.display = 'none';
+      formContainer.style.display = 'block';
+      // Re-populate from form state (still in DOM)
+      updateProgress();
+    });
+
+    // === Service Worker ===
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    // === Init ===
+    loadFromLocal();
+    updateProgress();
+  </script>
+</body>
+</html>
