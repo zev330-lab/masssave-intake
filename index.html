@@ -283,6 +283,24 @@
     }
     .toast.show { opacity: 1; }
 
+    .write-in {
+      margin-top: 10px;
+    }
+    .write-in input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 0.85rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .write-in input:focus { border-color: var(--amber); }
+    .write-in input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
     @media (min-width: 480px) {
       .option-grid { grid-template-columns: 1fr 1fr; }
     }
@@ -308,8 +326,18 @@
       <!-- Q1 -->
       <div class="question" data-q="1">
         <div class="q-num"><span class="check">&#10003;</span> Question 01</div>
-        <label class="q-label" for="q1">Which portal(s) do you primarily use for Mass Save jobs?</label>
-        <input type="text" id="q1" name="portal" placeholder="e.g. Salesforce, ClearResult, custom portal…" autocomplete="off">
+        <label class="q-label">Which portal(s) do you primarily use for Mass Save jobs?</label>
+        <div class="option-grid">
+          <label class="option-item"><input type="checkbox" name="portal" value="Salesforce"> Salesforce</label>
+          <label class="option-item"><input type="checkbox" name="portal" value="ClearResult"> ClearResult</label>
+          <label class="option-item"><input type="checkbox" name="portal" value="Energy Orbit"> Energy Orbit</label>
+          <label class="option-item"><input type="checkbox" name="portal" value="TRC Portal"> TRC Portal</label>
+          <label class="option-item"><input type="checkbox" name="portal" value="Utility-specific portal"> Utility-specific portal</label>
+          <label class="option-item"><input type="checkbox" name="portal" value="Custom / internal"> Custom / internal</label>
+        </div>
+        <div class="write-in">
+          <input type="text" name="portal_other" placeholder="Other portals (optional)" autocomplete="off">
+        </div>
       </div>
 
       <!-- Q2 -->
@@ -352,6 +380,9 @@
           <label class="option-item"><input type="checkbox" name="documents" value="Product spec sheets"> Product spec sheets</label>
           <label class="option-item"><input type="checkbox" name="documents" value="Permit docs"> Permit docs</label>
         </div>
+        <div class="write-in">
+          <input type="text" name="documents_other" placeholder="Other documents (optional)" autocomplete="off">
+        </div>
       </div>
 
       <!-- Q6 -->
@@ -366,6 +397,9 @@
           <label class="option-item"><input type="checkbox" name="field_software" value="Paper forms"> Paper forms</label>
           <label class="option-item"><input type="checkbox" name="field_software" value="Custom / other"> Custom / other</label>
         </div>
+        <div class="write-in">
+          <input type="text" name="field_software_other" placeholder="Other software (optional)" autocomplete="off">
+        </div>
       </div>
 
       <!-- Q7 -->
@@ -377,6 +411,9 @@
           <label class="option-item"><input type="radio" name="job_similarity" value="Mostly similar"> Mostly similar</label>
           <label class="option-item"><input type="radio" name="job_similarity" value="Somewhat varied"> Somewhat varied</label>
           <label class="option-item"><input type="radio" name="job_similarity" value="Every job is different"> Every job is different</label>
+        </div>
+        <div class="write-in">
+          <input type="text" name="job_similarity_detail" placeholder="Any detail to add? (optional)" autocomplete="off">
         </div>
       </div>
 
@@ -395,6 +432,9 @@
           <label class="option-item"><input type="radio" name="rebate_payee" value="Homeowner"> Homeowner</label>
           <label class="option-item"><input type="radio" name="rebate_payee" value="Contractor (me)"> Contractor (me)</label>
           <label class="option-item"><input type="radio" name="rebate_payee" value="Split / varies"> Split / varies</label>
+        </div>
+        <div class="write-in">
+          <input type="text" name="rebate_payee_detail" placeholder="Any detail to add? (optional)" autocomplete="off">
         </div>
       </div>
 
